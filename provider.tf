@@ -8,9 +8,9 @@ terraform {
     }
   }
   backend "azurerm" {
-    storage_account_name  = "terraformstateebmsa"
+    storage_account_name  = "terraformstate2429sa"
     container_name        = "terraformstate"
-    key                   = "terraform.tfstate.ado"
+    key                   = "terraform.tfstate.sa"
   }
 }
 
