@@ -1,0 +1,56 @@
+variables:
+- name: DECODE_PERCENTS
+  value: false
+
+trigger: none
+pr: none
+
+jobs:
+- job: adovmsscreation
+  timeoutInMinutes: 0
+  #pool: ado-vm-peer
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  #Setup Custom Variables for pipeline
+  - script: |
+      GIT_COMMIT=$( git rev-parse --short HEAD )
+      NOW=$(date +'%m%d%Y-%H%M%S')
+      echo "##vso[task.setvariable variable=commitHash;isOutput=true]$GIT_COMMIT"
+      echo "##vso[task.setvariable variable=now;isOutput=true]$NOW"
+    name: runtime_vars
+    displayName: 'Set runtime variables for pipeline'
+
+  #KEY VAULT TASK
+  - task: AzureKeyVault@1
+    inputs:
+      azureSubscription: 'PROJECT-EBM'
+      KeyVaultName: '$(AZURE_KEYVAULT_NAME)'
+      SecretsFilter: 'SP-CLIENTID,SP-PASSWORD,SP-TENANTID,SP-SUBSCRIPTIONID,SA-ACCESS-KEY'
+    displayName: 'Get key vault secrets'
+
+  # TERRAFORM VERSION
+  - script: |
+      terraform version
+    displayName: 'Get Terraform Version'
+
+  # AZ LOGIN USING TERRAFORM SERVICE PRINCIPAL
+  - script: |
+      az login --service-principal -u "$(SP-CLIENTID)" -p "$(SP-PASSWORD)" --tenant "$(SP-TENANTID)"
+    displayName: 'Login az cli'
+
+  - script: |
+      export ARM_CLIENT_ID=$(SP-CLIENTID)
+      export ARM_CLIENT_SECRET=$(SP-PASSWORD)
+      export ARM_SUBSCRIPTION_ID=$(SP-SUBSCRIPTIONID)
+      export ARM_TENANT_ID=$(SP-TENANTID)
+      export ARM_ACCESS_KEY=$(SA-ACCESS-KEY)
+      echo '#######Terraform Init########'
+      terraform init
+      echo '#######Terraform Plan########'
+      terraform plan -out="out.plan" 
+      echo '#######Terraform Apply########'
+      terraform apply out.plan
+    displayName: 'Terraform Init, Plan and Apply '
+
