@@ -28,7 +28,7 @@ resource "azurerm_storage_account" "sa" {
   tags = local.tags
 }
 
-resource "azurerm_storage_container" "outpu" {
+resource "azurerm_storage_container" "output" {
   name                  = "output"
   storage_account_name  = azurerm_storage_account.sa.name
   container_access_type = "private"
