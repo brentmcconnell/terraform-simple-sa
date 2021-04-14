@@ -2,7 +2,7 @@ locals {
   # All variables used in this file should be 
   # added as locals here 
   location              = var.location
-  prefix                = var.prefix
+  prefix                = lower(var.prefix)
   sa-name               = "datastorage${local.prefix}sa"
   
   # Common tags should go here
