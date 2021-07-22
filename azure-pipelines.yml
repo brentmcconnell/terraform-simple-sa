@@ -9,9 +9,8 @@ pr: none
 jobs:
 - job: sacreation
   timeoutInMinutes: 0
-  #pool: ado-vm-peer
   pool:
-    vmImage: 'ubuntu-latest'
+    name: ado-agent
 
   steps:
   #Setup Custom Variables for pipeline
